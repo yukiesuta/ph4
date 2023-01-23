@@ -39,7 +39,6 @@ const context = canvas.getContext("2d");
 const ball = new Ball;
 ball.pos.x = 1;
 ball.pos.y = 1;
-console.log(ball);
 
 ball.vel.x = 10;
 ball.vel.y = 10;
