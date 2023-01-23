@@ -50,7 +50,6 @@ function callback(millis) {
 
     if (lastTime) {
         update((millis - lastTime) / 10);
-        console.log((millis - lastTime) / 10);
     }
     lastTime = millis;
     requestAnimationFrame(callback);
