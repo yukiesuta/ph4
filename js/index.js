@@ -1,10 +1,19 @@
 // ベクトル
 class Vec {
-    constructor(x = 0, y = 0) {
-        this.x = x;
-        this.y = y;
+    constructor(_x, _y) {
+        this.x = _x;
+        this.y = _y;
     }
 }
+
+function setup() {
+    console.log('a');
+    for (let i = 0; i < 24; i++) {
+        console.log(Math.floor(i/4))
+      let p = new Vec(50*(i%8)+120, 50+40*Math.floor(i/8));
+      blocks.push(new Block(p, 20));
+    }
+  }
 
 // 長方形
 class Rect {
@@ -16,36 +25,51 @@ class Rect {
 
 // ボール
 class Ball extends Rect {
-    constructor() {
+    constructor(_p, _v) {
         super(10, 10);
-        // vel:速さ
-        this.vel = new Vec;
+        this.p = _p;
+        this.v = _v;
     }
 }
 
-// 環境
-class Pong{
-    constructor(canvas){
-        this._canvas=canvas;
-        this._context=canvas.getContext("2d");
+class Paddle extends Rect {
+    constructor(_p) {
+        super(10, 10);
+        this.p = _p;
     }
 }
+
+class Block extends Rect{
+    constructor(_p, _r) {
+        super(10, 10);
+      this.p = _p;
+      this.r = _r;
+    }
+  }
 
 
 const canvas = document.getElementById("pong");
 const context = canvas.getContext("2d");
 
 
-const ball = new Ball;
-ball.pos.x = 1;
-ball.pos.y = 1;
+const ball = new Ball(
+    new Vec(1, 1),
+    new Vec(300, 300)
+);
 
-ball.vel.x = 10;
-ball.vel.y = 10;
+const paddle = new Paddle(
+    new Vec(50, 30)
+);
+
+let blocks = [];
+
+
 
 let lastTime;
 
 function callback(millis) {
+
+
 
     if (lastTime) {
         update((millis - lastTime) / 10);
@@ -54,22 +78,64 @@ function callback(millis) {
     requestAnimationFrame(callback);
 }
 
-function update(dt) {
-    ball.pos.x += ball.vel.x * dt
-    ball.pos.y += ball.vel.y * dt
+document.addEventListener("mousemove", function (e) {
+    paddle.p.x = e.clientX
+});
+
+function update() {
+    ball.p.x += ball.v.x * 1 / 50;
+    ball.p.y += ball.v.y * 1 / 50;
 
     context.fillStyle = "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (ball.pos.x < 0 || ball.pos.x > canvas.width) {
-        ball.vel.x = -ball.vel.x;
-    }
-    if (ball.pos.y < 0 || ball.pos.y > canvas.height) {
-        ball.vel.y = -ball.vel.y;
-    }
 
+    if (ball.p.x < 0 || ball.p.x > canvas.width) {
+        ball.v.x = -ball.v.x;
+    }
+    if (ball.p.y < 0 || (ball.v.y>0&&paddle.p.x-100 < ball.p.x && paddle.p.x + 100 > ball.p.x && ball.p.y > 320)) {
+        ball.v.y = -ball.v.y;
+    }
+    if (ball.p.y > canvas.height) {
+        // context.removeChild();
+        var str = 'ゲームオーバー';
+        context.strokeStyle = 'red';              // 枠線の色
+        context.font = "50px 'ＭＳ ゴシック'";
+        context.textAlign = 'center';               // 配置
+        context.strokeText(str, 300, 50);
+        context.fillText('center', 1500, 550);
+        return false;
+    }
+    for (let block of blocks) {
+        let blockx = block.p.x; 
+        let blocky = block.p.y; 
+
+        if (blockx-10<ball.p.x&&blockx+10>ball.p.x&&blocky+10>ball.p.y&&blocky-10<ball.p.y) {
+
+          ball.v.y = -ball.v.y;
+          blocks.splice(blocks.indexOf(block), 1);
+      }
+    }
     context.fillStyle = "white";
-    context.fillRect(ball.pos.x, ball.pos.y, ball.size.x, ball.size.y);
-}
+    context.fillRect(ball.p.x, ball.p.y, ball.size.x, ball.size.y);
 
-callback();
+
+    context.fillStyle = "blue";
+    context.fillRect(paddle.p.x-100, 330, 200, 20);
+
+    for (let b of blocks) {
+        context.fillStyle = "red";
+        context.fillRect(b.p.x, b.p.y, 20, 5);
+      }
+    if(blocks.length===10){
+        var str = 'おめでとう';
+        context.strokeStyle = 'red';              // 枠線の色
+        context.font = "50px 'ＭＳ ゴシック'";
+        context.textAlign = 'center';               // 配置
+        context.strokeText(str, 300, 50);
+        context.fillText('center', 1500, 550);
+        return false;
+    }
+}
+    setup();
+    callback();
